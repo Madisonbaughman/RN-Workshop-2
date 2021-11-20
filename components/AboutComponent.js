@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { Text, ScrollView, FlatList } from 'react-native';
 import { Card, ListItem } from 'react-native-elements';
-import { PARTNERS } from '../shared/partners';
+import { connect } from 'react-redux';
+import { baseUrl } from '../shared/baseUrl';
+import Loading from './LoadingComponent';
 
-
-
-
+const mapStateToProps = state => {
+    return {
+        partners: state.partners
+    };
+};
 
 function Mission () {
     return (
@@ -18,17 +22,8 @@ function Mission () {
     );
 }
 
-
 class About extends Component {
 
-    constructor(props){
-        super(props);
-        this.state= {
-            partners: PARTNERS
-        };
-    }
-
-    
     static navigationOptions = {
         title: 'About'
     }
@@ -40,24 +35,44 @@ class About extends Component {
                 <ListItem
                     title={item.name}
                     subtitle={item.description}
-                    leftAvatar={{ source: require('./images/bootstrap-logo.png')}}
+                    leftAvatar={{ source: {uri: baseUrl + item.image} }}
                     />
                 );
         };
 
+    if (this.props.partners.isLoading) {
+        return (
+            <ScrollView>
+                <Mission />
+                <Card title="Community Partners">
+                    <Loading /> 
+                </Card>     
+            </ScrollView>
+        );
+    }
+
+    if (this.props.partners.errMess) {
+        return (
+            <ScrollView>
+                <Mission />
+                <Card title="Community Partners">
+                    <Text>{this.props.partners.errMess}</Text>  
+                </Card>     
+            </ScrollView>
+        );
+    }
         return (
             <ScrollView>
                 <Mission />
                 <Card title="Community Partners">
                     <FlatList
-                        data={this.state.partners}
+                        data={this.props.partners.partners}
                         keyExtractor={item => item.id.toString()}
                         renderItem={renderPartner} /> 
-                </Card>
-                 
+                </Card>     
             </ScrollView>
         );
     }
 }
 
-export default About;
+export default connect(mapStateToProps)(About);
